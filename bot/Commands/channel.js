@@ -7,9 +7,14 @@ class CustomCommand extends Command
 	constructor(client)
 	{
 		super(client, {
-			name: 'channelstats',
-			label: 'channel',
-			args: []
+			name: 'channel',
+			aliases: ['channelstats', 'channelinfo'],
+			args: [],
+			ratelimit: {
+				limit: 5,
+				duration: 5,
+				type: 'guild'
+			}
 		});
 	}
 
@@ -33,13 +38,13 @@ class CustomCommand extends Command
 				method: 'get',
 				url: `/muck/stats/channels/${channel.id}`
 			}).then(({response, data}) => {
-				return Utils.formatMuck({
+				return Utils.Tools.formatMuck({
 					is: 'channel',
 					context: channel
 				}, data);
 			}, (e) => {
 				if (!e.response) {return Promise.reject(e);}
-				return Utils.formatMuck({
+				return Utils.Tools.formatMuck({
 					is: 'channel',
 					context: channel,
 					error: e.response.data

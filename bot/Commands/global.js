@@ -7,12 +7,10 @@ class CustomCommand extends Command
 	constructor(client)
 	{
 		super(client, {
-			name: 'analyze',
-			label: 'content',
-			aliases: ['analyse'],
-			args: [],
+			name: 'global',
+			aliases: ['globalstats', 'globalinfo'],
 			ratelimit: {
-				limit: 10,
+				limit: 5,
 				duration: 5,
 				type: 'guild'
 			}
@@ -21,32 +19,15 @@ class CustomCommand extends Command
 
 	run(message, args)
 	{
-		if (!args.content) {return;}
-
 		return new Promise((resolve, reject) => {
 			this.client.request({
-				method: 'post',
-				url: '/muck',
-				body: {content: args.content},
-				jsonify: true
+				method: 'get',
+				url: '/muck/stats'
 			}).then(({response, data}) => {
-				return Utils.Tools.formatMuck({
-					is: 'analyze',
-					context: {
-						user: message.author,
-						content: args.content
-					}
-				}, data);
+				return Utils.Tools.formatMuck({is: 'global'}, data);
 			}, (e) => {
 				if (!e.response) {return Promise.reject(e);}
-				return Utils.Tools.formatMuck({
-					is: 'analyze',
-					context: {
-						user: message.author,
-						content: args.content
-					},
-					error: e.response.data
-				});
+				return Utils.Tools.formatMuck({is: 'global', error: e.response.data});
 			}).then(resolve).catch(reject);
 		}).then((embed) => {
 			return message.reply({embed});

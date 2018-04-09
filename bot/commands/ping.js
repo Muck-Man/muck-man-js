@@ -5,7 +5,12 @@ class CustomCommand extends Command
 	constructor(client)
 	{
 		super(client, {
-			name: 'ping'
+			name: 'ping',
+			ratelimit: {
+				limit: 10,
+				duration: 5,
+				type: 'guild'
+			}
 		});
 	}
 

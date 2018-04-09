@@ -1,5 +1,4 @@
 const MuckClient = require('./MuckClient.js');
-const Detritus = require('./lib');
 
 const client = new MuckClient({
 	client: {
@@ -7,31 +6,13 @@ const client = new MuckClient({
 		cache: {messages: {expire: 30}},
 		gateway: {loadAllMembers: true}
 	},
-	token: '' //muck api token
+	commandClient: {
+		prefixes: ['.m', '.muck'],
+		prefixSpace: true,
+		mentions: true
+	},
+	token: '', //muck api token
+	path: './Commands'
 });
 
-const commandClient = new Detritus.CommandClient({
-	prefixes: ['.m', '.muck'],
-	prefixSpace: true,
-	mentions: true
-}, client);
-
-commandClient.registerCommandsIn('./commands');
-
-commandClient.on('COMMAND_NONE', (event) => {
-	//console.log('COMMAND_NONE', event);
-});
-
-commandClient.on('COMMAND_FAIL', (event) => {
-	//console.log('COMMAND_FAIL', event.error.message);
-});
-
-commandClient.on('COMMAND_RUN_SUCCESS', (event) => {
-	//console.log('COMMAND_RUN_SUCCESS', event);
-});
-
-commandClient.on('COMMAND_RUN_FAIL', (event) => {
-	console.log('COMMAND_RUN_FAIL', event.error, event.command.name);
-});
-
-commandClient.run();
+client.run().catch(console.error);

@@ -7,15 +7,20 @@ class CustomCommand extends Command
 	constructor(client)
 	{
 		super(client, {
-			name: 'usage'
+			name: 'usage',
+			ratelimit: {
+				limit: 10,
+				duration: 5,
+				type: 'guild'
+			}
 		});
 	}
 
 	run(message, args)
 	{
 		return message.reply(['```json', JSON.stringify({
-			uptime: Utils.formatTime(process.uptime(), {ms: true}),
-			memory: Utils.formatMemory(process.memoryUsage().heapUsed),
+			uptime: Utils.Tools.formatTime(process.uptime() * 1000, {ms: true}),
+			memory: Utils.Tools.formatMemory(process.memoryUsage().heapUsed),
 			messages: this.client.messages.size,
 			guilds: this.client.guilds.size,
 			channels: this.client.channels.size,

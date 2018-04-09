@@ -1,12 +1,15 @@
-const Detritus = require('./lib');
+const Detritus = require('../lib');
+
+const Constants = require('./Constants.js');
 
 module.exports = {
 	formatMuck: (info, data) => {
 		const color = {r: 0, g: 0, b: 0};
 
 		if (data) {
-			color.r = parseInt(255 * data.scores.toxicity);
-			color.g = parseInt(255 * (1 - data.scores.toxicity));
+			const avg = (data.scores.toxicity + data.scores.obscene) / 2;
+			color.r = parseInt(255 * avg);
+			color.g = parseInt(255 * (1 - avg));
 			
 			if (color.r > color.g) {
 				color.b = 71;
@@ -27,13 +30,16 @@ module.exports = {
 		if (info.error) {
 			embed.footer.text = `Error: ${info.error.message}`;
 		} else {
-			Object.keys(data.scores).sort().forEach((key) => {
-				embed.fields.push({
-					name: key.toLowerCase().split('_').map((t) => t.charAt(0).toUpperCase() + t.substr(1)).join(' '),
-					value: `${(data.scores[key] * 100).toFixed(2)}%`,
-					inline: true
+			if (data) {
+				Object.keys(data.scores).sort().forEach((key) => {
+					const attribute = Constants.PerspectiveAttributes[key.toUpperCase()];
+					embed.fields.push({
+						name: attribute.name,
+						value: `${(data.scores[key] * 100).toFixed(2)}%`,
+						inline: true
+					});
 				});
-			});
+			}
 		}
 
 		switch (info.is) {
@@ -79,6 +85,38 @@ module.exports = {
 				embed.description = info.context.content;
 				if (!info.error) {
 					embed.footer.text = 'Muck Man';
+				}
+			}; break;
+			case 'log-delete': {
+				embed.author.name = `Deleted ${info.context.user.toString()} (${info.context.user.id})'s Message`;
+				embed.author.icon_url = info.context.user.avatarURL;
+				embed.title = 'Content Deleted';
+				embed.description = info.context.content;
+				embed.fields = [];
+				Object.keys(info.context.thresholds).sort().forEach((key) => {
+					const attribute = Constants.PerspectiveAttributes[key.toUpperCase()];
+					embed.fields.push({
+						name: attribute.name,
+						value: [
+							`Threshold: ${(info.context.thresholds[key] * 100).toFixed(2)}%`,
+							`User: ${(data.scores[key] * 100).toFixed(2)}%`,
+						].join('\n'),
+						inline: true
+					});
+				});
+				if (!info.error) {
+					embed.footer.text = `Channel ${info.context.channel.toString()} (${info.context.channel.id})`;
+					embed.timestamp = info.context.timestamp;
+				}
+			}; break;
+			case 'log': {
+				embed.author.name = `${info.context.user.toString()} (${info.context.user.id})`;
+				embed.author.icon_url = info.context.user.avatarURL;
+				embed.title = 'Content';
+				embed.description = info.context.content;
+				if (!info.error) {
+					embed.footer.text = `Channel ${info.context.channel.toString()} (${info.context.channel.id})`;
+					embed.timestamp = info.context.timestamp;
 				}
 			}; break;
 		}
