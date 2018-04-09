@@ -43,17 +43,40 @@ class MuckClient extends Detritus.Client
 				this.commandClient.registerCommandsIn(this.path).then(resolve).catch(reject);
 			}
 		}).then(() => {
-			this.commandClient.on('COMMAND_NONE', this.onNoCommand.bind(this));
-			this.commandClient.on('COMMAND_FAIL', ({message, error}) => {});
-			this.commandClient.on('COMMAND_RUN_SUCCESS', ({message, prefix, args, command}) => {});
-			this.commandClient.on('COMMAND_RUN_FAIL', ({message, error, command}) => console.error('COMMAND_RUN_FAIL', error, command.name));
+			this.commandClient.on('COMMAND_NONE', this.onCommandNone.bind(this));
+			this.commandClient.on('COMMAND_FAIL', ({message, error}) => console.error(error));
+			this.commandClient.on('COMMAND_FAIL_RATELIMIT', this.onCommandRatelimit.bind(this));
+			this.commandClient.on('COMMAND_RUN_SUCCESS', ({message, command, prefix, args}) => {});
+			this.commandClient.on('COMMAND_RUN_FAIL', ({message, command, prefix, args, error}) => console.error('COMMAND_RUN_FAIL', error, command.name));
 		}).then(() => {
 			return this.commandClient.run(options);
 		});
 	}
 
-	onNoCommand({message})
+	onCommandRatelimit({message, error, remaining})
 	{
+		const command = error.command;
+		const ratelimit = error.ratelimit;
+
+		if (!ratelimit.replied) {
+			ratelimit.replied = setTimeout(() => {
+				ratelimit.replied = false;
+			}, remaining);
+
+			let noun;
+			switch (command.ratelimit.settings.type) {
+				case 'guild':
+				case 'channel': noun = 'you guys'; break;
+				default: noun = 'you';
+			}
+			
+			message.reply(`You're using \`${command.name}\` too fast, ${noun} cannot use it for another ${(remaining / 1000).toFixed(1)} seconds.`).catch(() => {});
+		}
+	}
+
+	onCommandNone({message})
+	{
+		if (message.fromBot || message.fromSystem) {return;}
 		if (!message.content) {return;}
 
 		const channel = message.channel;

@@ -8,7 +8,11 @@ class CustomCommand extends Command
 	{
 		super(client, {
 			name: 'reload',
-			aliases: ['reloadcommands', 'reloadcmds']
+			aliases: ['reloadcommands', 'reloadcmds'],
+			ratelimit: {
+				limit: 5,
+				duration: 5
+			}
 		});
 	}
 

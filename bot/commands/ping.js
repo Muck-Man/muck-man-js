@@ -7,7 +7,7 @@ class CustomCommand extends Command
 		super(client, {
 			name: 'ping',
 			ratelimit: {
-				limit: 10,
+				limit: 5,
 				duration: 5,
 				type: 'guild'
 			}
