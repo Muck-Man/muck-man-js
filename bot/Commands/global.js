@@ -1,4 +1,4 @@
-const Command = require('detritus').CommandClient.Command;
+const Command = require('../lib').CommandClient.Command;
 
 const Utils = require('../Utils');
 

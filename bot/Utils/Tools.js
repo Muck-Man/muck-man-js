@@ -1,4 +1,4 @@
-const Detritus = require('detritus');
+const Detritus = require('../lib');
 
 const Constants = require('./Constants.js');
 

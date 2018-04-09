@@ -1,6 +1,4 @@
-const Detritus = require('detritus');
-
-const Command = require('detritus').CommandClient.Command;
+const Command = require('../lib').CommandClient.Command;
 
 class CustomCommand extends Command
 {
@@ -9,7 +7,17 @@ class CustomCommand extends Command
 		super(client, {
 			name: 'setthreshold',
 			label: 'attribute',
-			args: [{name: 'amount'}, {name: 'guild'}, {name: 'channel'}],
+			args: [
+				{
+					name: 'amount'
+				},
+				{
+					name: 'guild'
+				},
+				{
+					name: 'channel'
+				}
+			],
 			ratelimit: {
 				limit: 5,
 				duration: 5,
@@ -27,16 +35,17 @@ class CustomCommand extends Command
 			if (args.guild && args.channel) {return reject(new Error('Both Guild and Channel cannot be specified.'));}
 			
 			let amount;
-			if (~args.amount.indexOf('%')) {
-				amount = args.amount.replace(/%/g, '');
+			if (~args.amount.indexOf('%') || !~args.amount.indexOf('.')) {
+				amount = parseInt(args.amount.replace(/%/g, ''));
+				if (!isNaN(amount)) {
+					amount = amount / 100;
+				}
+			} else {
+				amount = parseFloat(args.amount);
 			}
-
-			amount = parseFloat(amount);
 			if (isNaN(amount)) {
 				return reject(new Error('Amount is not a number'));
 			}
-
-			amount = Math.max(0, Math.min(amount / 100, 100));
 
 			const attribute = args.attribute.replace(/ /g, '_');
 			const context = {};
@@ -48,13 +57,8 @@ class CustomCommand extends Command
 					context.type = 'guilds';
 					context.id = args.guild;
 				} else {
-					const match = Detritus.Utils.Tools.regex('channel', args.channel);
-					if (match) {
-						context.id = match.id;
-					} else {
-						context.id = args.channel;
-					}
 					context.type = 'channels';
+					context.id = args.channel;
 				}
 			}
 
@@ -66,7 +70,7 @@ class CustomCommand extends Command
 				jsonify: true,
 				body
 			}).then(({response, data}) => {
-				return message.reply(`set ${attribute} threshold to ${(amount * 100).toFixed(2)}% in ${context.type.slice(0, -1)} <${context.id}>`);
+				return message.reply(`set ${attribute} threshold to ${amount * 100}% in ${context.type.slice(0, -1)} <${context.id}>`);
 			}).catch((e) => {
 				if (!e.response) {return Promise.reject(e);}
 				return message.reply(e.response.data.message);
