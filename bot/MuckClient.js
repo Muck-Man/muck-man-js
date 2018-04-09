@@ -1,4 +1,4 @@
-const Detritus = require('./lib');
+const Detritus = require('detritus');
 const Utils = require('./Utils');
 
 class MuckClient extends Detritus.Client
@@ -69,7 +69,7 @@ class MuckClient extends Detritus.Client
 				case 'channel': noun = 'you guys'; break;
 				default: noun = 'you';
 			}
-			
+
 			message.reply(`You're using \`${command.name}\` too fast, ${noun} cannot use it for another ${(remaining / 1000).toFixed(1)} seconds.`).catch(() => {});
 		}
 	}
