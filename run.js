@@ -1,4 +1,4 @@
-const MuckClient = require('./MuckClient.js');
+const MuckClient = require('../bot/MuckClient.js');
 
 const client = new MuckClient({
 	client: {
@@ -12,7 +12,7 @@ const client = new MuckClient({
 		mentions: true
 	},
 	token: '', //muck api token
-	path: './Commands'
+	path: './bot/Commands'
 });
 
 client.run().catch(console.error);

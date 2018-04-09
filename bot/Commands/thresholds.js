@@ -1,4 +1,4 @@
-const Command = require('../lib').CommandClient.Command;
+const Command = require('detritus').CommandClient.Command;
 
 class CustomCommand extends Command
 {
